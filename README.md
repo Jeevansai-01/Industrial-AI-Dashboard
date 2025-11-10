@@ -5,7 +5,23 @@ This project is a real-time monitoring dashboard that keeps an eye on industrial
 It's designed to be straightforward to get up and running, whether you want to play with it on your local machine or deploy it using Docker.
 
 
-*(You should totally replace this with a real screenshot of your dashboard!)*
+
+<img width="1919" height="895" alt="Screenshot 2025-11-10 213750" src="https://github.com/user-attachments/assets/09006b60-ce27-4450-b4ea-da6531f6a0b0" />
+
+
+
+<img width="1919" height="896" alt="Screenshot 2025-11-10 213817" src="https://github.com/user-attachments/assets/09144d1c-07c5-4a8e-ae50-fe903bac97a2" />
+
+
+<img width="1917" height="893" alt="Screenshot 2025-11-10 213833" src="https://github.com/user-attachments/assets/9ca14a6f-47f9-47ff-8fe5-3ce24a8ca476" />
+
+
+<img width="1917" height="895" alt="Screenshot 2025-11-10 213847" src="https://github.com/user-attachments/assets/17005777-0488-4f39-a847-6e22be0d720a" />
+
+
+<img width="1918" height="895" alt="Screenshot 2025-11-10 213934" src="https://github.com/user-attachments/assets/de1f7bb4-80d8-4b16-ba4c-2149b4b8d07e" />
+
+
 
 ## What's Cool About It?
 
