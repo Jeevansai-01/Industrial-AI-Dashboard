@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Python virtual environment
+.venv
+venv
+env
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+
+# IDE and editor files
+.idea
+.vscode
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+.pytest_cache
+htmlcov
+.coverage
+
+# Local data and environment files
+*.sqlite3
+*.db
+*.csv
+*.log
+.env

@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Python virtual environment
+.venv
+venv/
+env/
+
+# Environment variables
+# ---
+# Never commit your .env file! It contains sensitive information.
+# The .env.example file is a template and SHOULD be committed.
+.env
+
+# Database and Data Files
+# ---
+# These are often large or contain sensitive information.
+*.db
+*.sqlite3
+*.csv
+*.log
+
+# IDE / Editor specific
+.vscode/
+.idea/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS-specific files
+.DS_Store
+Thumbs.db

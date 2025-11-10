@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - sensor_data:/app/data
+    restart: unless-stopped
+   
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ingestor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "data_simulator.py"]
+    env_file:
+      - .env
+    volumes:
+      - sensor_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  sensor_data:
+    driver: local

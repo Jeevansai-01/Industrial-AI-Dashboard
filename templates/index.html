@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Industrial AI Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+
+<body class="neo">
+    <div class="grid-background"></div>
+    <div class="fx-grid"></div>
+
+    <header class="hdr">
+        <div class="hdr-left">
+            <div class="brand">
+                <span class="dot"></span>
+                <span>Industrial AI Dashboard</span>
+            </div>
+            <span id="globalAlert" style="display:none;" class="flash-dot"></span>
+        </div>
+        <div class="hdr-status">
+            Last Anomaly: <span id="lastAnomalyTime">--</span>
+        </div>
+        <div class="hdr-right">
+            <small id="tzBadge" class="tz">UTC</small>
+        </div>
+    </header>
+
+    <section id="controls" class="controls glass">
+        <div class="ctrl-group">
+            <button id="startLiveBtn" class="pill">Start Live</button>
+            <button id="stopLiveBtn" class="pill">Stop Live</button>
+            <div class="divider"></div>
+            <button id="startReplayBtn" class="pill">Start Replay</button>
+            <button id="resetReplayBtn" class="pill">Reset Replay</button>
+            <span class="replay-pack">
+                <span class="lbl">Replay:</span>
+                <button id="replayPlayBtn" data-playing="0" class="pill">Play</button>
+                <button id="replayStepBack" class="pill">Step -</button>
+                <select id="replaySpeed" class="pill">
+                    <option value="1">1x</option>
+                    <option value="3">3x</option>
+                    <option value="6">6x</option>
+                </select>
+                <button id="replayStepFwd" class="pill">Step +</button>
+                <input id="replayJumpTs" type="datetime-local" class="pill">
+                <button id="replayJumpBtn" class="pill">Jump</button>
+            </span>
+        </div>
+        <div class="ctrl-group">
+            <button id="exportBtn" class="pill">Export CSV</button>
+            <button id="reportBtn" class="pill">Generate PDF</button>
+            <div class="divider"></div>
+            <label class="pill lbl">View
+                <select id="viewWindowSelect" class="pill" aria-label="View window seconds">
+                    <option value="60" selected>60 s</option>
+                    <option value="120">120 s</option>
+                    <option value="300">300 s</option>
+                </select>
+            </label>
+            <label class="pill lbl">Score Window
+                <select id="scoreWindowSelect" class="pill" aria-label="Score window">
+                    <option value="30">30</option>
+                    <option value="60" selected>60</option>
+                    <option value="90">90</option>
+                    <option value="120">120</option>
+                    <option value="150">150</option>
+                    <option value="180">180</option>
+                </select>
+            </label>
+            <label class="pill lbl">Contam
+                <input id="contSlider" type="range" min="0.01" max="0.15" step="0.01" value="0.05">
+                <span id="contVal">0.05</span>
+            </label>
+            <label class="pill lbl">Detector
+                <select id="detectorSelect" class="pill" aria-label="Detector">
+                    <option value="iforest">Isolation Forest</option>
+                    <option value="lstm">LSTM (demo)</option>
+                </select>
+            </label>
+        </div>
+        <div class="activity">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </div>
+    </section>
+
+    <div class="page-container">
+        <nav id="sidebarNav" class="sidebar glass">
+            <button id="navTabOverview" class="nav-tab active">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Overview</span>
+            </button>
+            <button id="navTabTemp" class="nav-tab">
+                <div id="tempSpark" class="sparkline"></div>
+                <div class="spark-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"></path></svg>
+                    <span>Temperature</span>
+                </div>
+            </button>
+            <button id="navTabPressure" class="nav-tab">
+                <div id="pressSpark" class="sparkline"></div>
+                <div class="spark-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z"></path><path d="M12 12v6a2 2 0 0 0 2 2h4"></path><path d="m16 20-2-2 2-2"></path><path d="M12 7v1"></path><path d="m4.93 4.93 1 1"></path><path d="m2 12h1"></path><path d="m4.93 19.07 1-1"></path></svg>
+                    <span>Pressure</span>
+                </div>
+            </button>
+            <button id="navTabRpm" class="nav-tab">
+                <div id="rpmSpark" class="sparkline"></div>
+                <div class="spark-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-3 14v4l3 3h4l3-3v-4L13 2"></path><path d="M13 2 6 22"></path><path d="m6.12 15.2-1.07 3.9"></path><path d="M16.88 15.2 20 19.1"></path></svg>
+                    <span>Motor Speed</span>
+                </div>
+            </button>
+        </nav>
+
+        <main id="mainContent" class="main-content">
+            <div id="viewOverview" class="view-content active">
+                <div id="systemStatus" class="status-card status-nominal">
+                    <span class="label">System Status:</span>
+                    <span class="value" id="statusValue">NOMINAL</span>
+                </div>
+
+                <div class="overview-grid">
+                    <section class="col-kpis">
+                        <section class="kpis">
+                            <div class="kpi glass"><div class="label">Latest Temp</div><div class="value" id="kpiTemp">--</div></div>
+                            <div class="kpi glass"><div class="label">Latest Pressure</div><div class="value" id="kpiPress">--</div></div>
+                            <div class="kpi glass"><div class="label">Latest RPM</div><div class="value" id="kpiRpm">--</div></div>
+                            <div class="kpi glass"><div class="label">Anomalies (window)</div><div class="value" id="kpiAnom">No</div></div>
+                        </section>
+                        
+                        <div class="range-pack glass">
+                            <h4>Export Range</h4>
+                            <label class="lbl">From:</label>
+                            <input id="rangeFrom" type="datetime-local" class="pill">
+                            <label class="lbl">To:</label>
+                            <input id="rangeTo" type="datetime-local" class="pill">
+                            <label class="lbl">Contam:</label>
+                            <input id="rangeCont" type="number" min="0.01" max="0.50" step="0.01" value="0.05" class="pill">
+                            <div class="btn-group">
+                                <button id="exportRangeBtn" class="pill pill-light">Export CSV</button>
+                                <button id="reportRangeBtn" class="pill pill-light">Report PDF</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="col-triage">
+                        <h3 style="margin-top:0;">Anomaly Table</h3>
+                        <div id="anomContainer" class="glass">
+                            <table id="anomTable" class="table">
+                                <thead>
+                                    <tr><th>Time</th><th>Temp</th><th>Pressure</th><th>RPM</th><th>Score</th></tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <button id="copyCsvBtn" class="pill pill-light">Copy table as CSV</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            
+            <div id="viewTemp" class="view-content">
+                <div class="card holo-lines full-height">
+                    <h3>Temperature (°C) <span id="badgeWinTemp" class="badge" style="margin-left:auto;"></span></h3>
+                    <div id="tempChart" class="chart-full"></div>
+                    <div class="chart-footer">
+                        <div>Latest: <span id="latest-temp-reading" class="chart-footer-value">--</span></div>
+                        <div class="live-clock chart-footer-value">00:00:00</div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="viewPressure" class="view-content">
+                <div class="card holo-lines full-height">
+                    <h3>Pressure (bar) <span id="badgeWinPress" class="badge" style="margin-left:auto;"></span></h3>
+                    <div id="pressChart" class="chart-full"></div>
+                    <div class="chart-footer">
+                        <div>Latest: <span id="latest-press-reading" class="chart-footer-value">--</span></div>
+                        <div class="live-clock chart-footer-value">00:00:00</div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="viewRpm" class="view-content">
+                <div class="card holo-lines full-height">
+                    <h3>Motor Speed (RPM) <span id="badgeWinRpm" class="badge" style="margin-left:auto;"></span></h3>
+                    <div id="rpmChart" class="chart-full"></div>
+                    <div class="chart-footer">
+                        <div>Latest: <span id="latest-rpm-reading" class="chart-footer-value">--</span></div>
+                        <div class="live-clock chart-footer-value">00:00:00</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-left">
+            <div id="toastHost" aria-live="assertive" aria-atomic="true"></div>
+            <div id="statusText">Connecting...</div>
+        </div>
+    </div>
+
+    <div id="alertOverlay" class="alert-overlay" style="display:none;">
+        <div class="alert-content">
+            <div class="alert-icon">!</div>
+            <div class="alert-title">CRITICAL ALERT</div>
+            <div id="alertDetails"></div>
+            <button id="alertAckBtn" class="pill">Acknowledge</button>
+        </div>
+    </div>
+</body>
+</html>
