@@ -62,9 +62,9 @@ If you want to run the project directly on your machine to tinker with the code.
 
 First, grab the code and hop into the project folder.
 ```
-git clone <your-repository-url>
+git clone https://github.com/Jeevansai-01/Industrial-AI-Dashboard.git
 
-cd industrial-ai-dashboard
+cd Industrial-AI-Dashboard
 ```
 Next, set up a Python virtual environment. It's like giving the project its own private little sandbox to play in, so its dependencies don't mess with your other Python projects.
 ```
